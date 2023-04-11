@@ -94,7 +94,7 @@ FROM EMPLOYEE
 WHERE TO_CHAR(SYSDATE, 'YYYY') - EXTRACT(YEAR FROM HIRE_DATE) >= 20;
 
 --20. EMPLOYEE 테이블에서 사원명, 급여 조회 (단, 급여는 '\9,000,000' 형식으로 표시)
-SELECT EMP_NAME, TO_CHAR(SALARY, 'L9,999,999') AS 급여
+SELECT EMP_NAME, TO_CHAR(SALARY, 'L999,999,990') AS 급여
 FROM EMPLOYEE;
 
 --21. EMPLOYEE테이블에서 직원 명, 부서코드, 생년월일, 나이 조회
@@ -102,16 +102,16 @@ FROM EMPLOYEE;
 --   나이는 주민번호에서 출력해서 날짜데이터로 변환한 다음 계산)
 SELECT EMP_NAME, DEPT_CODE, SUBSTR(EMP_NO,1,2) || '년' ||
        SUBSTR(EMP_NO,3,2) || '월' || SUBSTR(EMP_NO,5,2) || '일' AS 생년월일,
-       TO_NUMBER(TO_CHAR(SYSDATE, 'YYYY')) - TO_NUMBER('19' || SUBSTR(EMP_NO,1,2)) AS 나이
+       EXTRACT(YEAR FROM SYSDATE) - EXTRACT(YEAR FROM TO_DATE(SUBSTR(EMP_NO,1,2), 'RRRR')) 나이
 FROM EMPLOYEE;
 
 --22. EMPLOYEE테이블에서 부서코드가 D5, D6, D9인 사원만 조회하되 D5면 총무부, D6면 기획부, D9면 영업부로 처리
 --   (단, 부서코드 오름차순으로 정렬)
-SELECT EMP_NAME
+SELECT EMP_ID, EMP_NAME, DEPT_CODE
      , DECODE(DEPT_CODE, 'D5', '총무부', 'D6', '기획부', 'D9', '영업부') 부서명
 FROM EMPLOYEE
 WHERE DEPT_CODE IN ('D5','D6','D9')
-ORDER BY DEPT_CODE;
+ORDER BY 3;
 
 --23. EMPLOYEE테이블에서 사번이 201번인 사원명, 주민번호 앞자리, 주민번호 뒷자리, 
 --   주민번호 앞자리와 뒷자리의 합 조회
@@ -127,5 +127,9 @@ WHERE DEPT_CODE = 'D5';
 
 --25. EMPLOYEE테이블에서 직원들의 입사일로부터 년도만 가지고 각 년도별 입사 인원수 조회
 --    전체 직원 수, 2001년, 2002년, 2003년, 2004년
-SELECT DECODE(SUBSTR(HIRE_DATE,1,4),2001,'2001년',2002,'2002년',2003,'2003년',2004,'2004년')
+SELECT COUNT(*) 전체직원수
+    , COUNT(DECODE(EXTRACT(YEAR FROM HIRE_DATE), '2001', 1)) "2001년"
+    , COUNT(DECODE(EXTRACT(YEAR FROM HIRE_DATE), '2002', 1)) "2002년"
+    , COUNT(DECODE(EXTRACT(YEAR FROM HIRE_DATE), '2003', 1)) "2003년"
+    , COUNT(DECODE(EXTRACT(YEAR FROM HIRE_DATE), '2004', 1)) "2004년"
 FROM EMPLOYEE;
