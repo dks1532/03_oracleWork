@@ -1,0 +1,70 @@
+-- <DDL>
+-- 1. 계열 정보 테이블 생성
+CREATE TABLE TB_CATEGORY (
+    NAME VARCHAR2(20),
+    USE_YN CHAR(1) DEFAULT 'Y'
+);
+
+-- 2. 과목 구분 테이블 생성
+CREATE TABLE TB_CLASS_TYPE (
+    NO VARCHAR2(5) PRIMARY KEY,
+    NAME VARCHAR2(20)
+);
+
+-- <DML>
+-- 1. TB_CLASS_TYPE 테이블에 데이터 입력
+INSERT INTO TB_CLASS_TYPE VALUES('01', '전공필수');
+INSERT INTO TB_CLASS_TYPE VALUES('02', '전공선택');
+INSERT INTO TB_CLASS_TYPE VALUES('03', '교양필수');
+INSERT INTO TB_CLASS_TYPE VALUES('04', '교양선택');
+INSERT INTO TB_CLASS_TYPE VALUES('05', '논문지도');
+
+-- 2. 학생일반정보 테이블 생성(서브쿼리 이용)
+CREATE TABLE TB_학생일반정보
+AS SELECT STUDENT_NO 학번, STUDENT_NAME 학생이름, STUDENT_ADDRESS 주소
+    FROM TB_STUDENT;
+
+-- 3. 국문과 학과정보 테이블
+CREATE TABLE TB_국어국문학과
+AS SELECT STUDENT_NO 학번, STUDENT_NAME 학생이름
+        , EXTRACT(YEAR FROM TO_DATE(SUBSTR(STUDENT_SSN,1,2),'RRRR')) 출생년도
+        , PROFESSOR_NAME 교수이름
+    FROM TB_STUDENT
+    JOIN TB_PROFESSOR ON (COACH_PROFESSOR_NO = PROFESSOR_NO);
+
+-- 4. 학과들의 정원 10% 증가
+UPDATE TB_DEPARTMENT
+SET CAPACITY = CAPACITY*1.1;
+
+-- 5. 주소지 변경
+UPDATE TB_STUDENT
+SET STUDENT_ADDRESS = '서울시 종로구 숭인동 181-21'
+WHERE STUDENT_NAME = '박건우';
+
+-- 6. 주민번호 뒷자리 삭제
+UPDATE TB_STUDENT
+SET STUDENT_SSN = SUBSTR(STUDENT_SSN,1,6);
+
+-- 7. 학점 변경
+UPDATE TB_GRADE
+SET POINT = 3.5
+WHERE (STUDENT_NO, CLASS_NO) = (SELECT STUDENT_NO, CLASS_NO
+                                FROM TB_GRADE
+                                JOIN TB_STUDENT USING(STUDENT_NO)
+                                JOIN TB_CLASS USING(CLASS_NO)
+                                WHERE STUDENT_NAME = '김명훈' 
+                                    AND CLASS_NAME = '피부생리학'
+                                    AND TERM_NO = 200501);
+
+-- 김명훈 학생의 피부생리학 점수 조회
+SELECT STUDENT_NAME, CLASS_NAME, POINT
+FROM TB_GRADE
+JOIN TB_STUDENT USING(STUDENT_NO)
+JOIN TB_CLASS USING(CLASS_NO)
+WHERE STUDENT_NAME = '김명훈' AND CLASS_NAME = '피부생리학' AND TERM_NO = 200501;
+
+-- 8. 성적테이블에서 휴학생 성적 제거
+DELETE FROM TB_GRADE
+WHERE STUDENT_NO IN (SELECT STUDENT_NO
+                       FROM TB_STUDENT
+                      WHERE ABSENCE_YN = 'Y');

@@ -25,3 +25,17 @@ drop user c##test2;
 
 -- 테이블이 존재할 경우 사용자 삭제
 drop user c##test2 cascade;
+
+-- 사용자 : ddl
+-- 비밀번호 : 1234
+alter session set "_oracle_script" = true;
+create user ddl identified by 1234;
+grant connect, resource to ddl;
+alter user ddl default tablespace users quota unlimited on users;
+
+-- 사용자 : workbook / 1234
+alter session set "_oracle_script" = true;
+create user workbook identified by 1234;
+grant connect, resource to workbook;
+alter user workbook default tablespace users quota unlimited on users;
+
