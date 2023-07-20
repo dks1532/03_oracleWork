@@ -39,3 +39,9 @@ create user workbook identified by 1234;
 grant connect, resource to workbook;
 alter user workbook default tablespace users quota unlimited on users;
 
+-- 사용자 : bucketlist
+-- 비밀번호 : 1234
+alter session set "_oracle_script" = true;
+create user bucketlist identified by 1234;
+grant connect, resource to bucketlist;
+alter user bucketlist default tablespace users quota unlimited on users;
